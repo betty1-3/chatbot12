@@ -1,6 +1,6 @@
 import './style.css'
 
-const GEMINI_BACKEND_URL = "https://your-gemini-backend.onrender.com/api/ask-llm";
+const GEMINI_BACKEND_URL = "https://llmbackend12.onrender.com/api/ask-llm";
 const ML_BACKEND_URL = "https://agri-ai-web-app.onrender.com/";
 
 const translations = {
