@@ -250,9 +250,3 @@ async function finishProcess() {
     addBotMessage("❌ " + err.message);
   }
 }
-
-const res = await fetch("/api/predict", {...});
-const data = await res.json();
-
-localStorage.setItem("prediction", JSON.stringify(data));
-window.location.href = "/results.html";
