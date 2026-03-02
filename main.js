@@ -1,7 +1,7 @@
 import './style.css'
 
 const GEMINI_BACKEND_URL = "https://llmbackend12-1.onrender.com/api/ask-llm";
-const ML_BACKEND_URL = "https://illegalmonkey-agri-ai-iot.hf.space/predict";
+const ML_BACKEND_URL = "https://illegalmonkey-agri-ai-iot.hf.space/api/predict";
 
 const translations = {
   english: {
