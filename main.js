@@ -237,15 +237,8 @@ const response = await fetch(ML_BACKEND_URL, {
   body: JSON.stringify(collectedData)
 });
 
-const result = await response.json();;
-
-    const result = await response.json();
-
-    addBotMessage("🌾 Recommendation:");
-    addBotMessage(JSON.stringify(result));
-
-  } catch (err) {
-    console.error("ML ERROR FULL:", err);
-    addBotMessage("❌ " + err.message);
-  }
+if (!response.ok) {
+  throw new Error("Prediction failed");
 }
+
+window.location.href = "https://illegalmonkey-agri-ai-iot.hf.space";
