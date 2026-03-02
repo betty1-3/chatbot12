@@ -1,7 +1,7 @@
 import './style.css'
 
 const GEMINI_BACKEND_URL = "https://llmbackend12-1.onrender.com/api/ask-llm";
-const ML_BACKEND_URL = "https://illegalmonkey-agri-ai-iot.hf.space/api/predict";
+const ML_BACKEND_URL = "https://illegalmonkey-agri-ai-iot.hf.space/predict";
 
 const translations = {
   english: {
@@ -222,11 +222,37 @@ async function finishProcess() {
 
     console.log("Final data being sent:", collectedData);
 
-    const response = await fetch(ML_BACKEND_URL, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(collectedData)
-    });
+function finishProcess() {
+  addBotMessage(currentLanguage.processing);
+  messageInput.disabled = true;
+  micButton.disabled = true;
+
+  collectedData.end_date = new Date().toISOString().split("T")[0];
+
+  console.log("Submitting to ML UI:", collectedData);
+
+  const form = document.createElement("form");
+  form.method = "POST";
+  form.action = "https://illegalmonkey-agri-ai-iot.hf.space/predict";
+
+  function addField(name, value) {
+    const input = document.createElement("input");
+    input.type = "hidden";
+    input.name = name;
+    input.value = value;
+    form.appendChild(input);
+  }
+
+  addField("state", collectedData.state);
+  addField("district", collectedData.district);
+  addField("crop", collectedData.crop);
+  addField("land_area", collectedData.land_area);
+  addField("sowing_date", collectedData.sowing_date);
+  addField("end_date", collectedData.end_date);
+
+  document.body.appendChild(form);
+  form.submit();
+}
 
     if (!response.ok) {
       throw new Error("Prediction failed");
