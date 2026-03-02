@@ -229,11 +229,21 @@ async function finishProcess() {
 
     console.log("Final data being sent:", collectedData);
 
-    const response = await fetch(ML_BACKEND_URL, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(collectedData)
-    });
+  const formData = new URLSearchParams();
+  formData.append("state", collectedData.state);
+  formData.append("district", collectedData.district);
+  formData.append("crop", collectedData.crop);
+  formData.append("land_area", collectedData.land_area);
+  formData.append("sowing_date", collectedData.sowing_date);
+  formData.append("end_date", collectedData.end_date || "");
+  
+  const response = await fetch(ML_BACKEND_URL, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/x-www-form-urlencoded"
+    },
+    body: formData.toString()
+  });
 
     const result = await response.json();
 
