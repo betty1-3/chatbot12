@@ -1,5 +1,7 @@
 import './style.css'
-import { extractLocationData, extractFarmSize, extractCropType, extractSowingDate } from './dataExtractor.js'
+
+const GEMINI_BACKEND_URL = "https://your-gemini-backend.onrender.com/api/ask-llm";
+const ML_BACKEND_URL = "https://agri-ai-web-app.onrender.com/";
 
 const translations = {
   english: {
@@ -19,18 +21,18 @@ const translations = {
     lang: 'hi-IN'
   },
   odia: {
-    greeting: "ନମସ୍କାର! ଆପଣଙ୍କ ଚାଷ ଜମିର ସ୍ଥାନ କଣ? ଦୟାକରି ଜିଲ୍ଲା ଏବଂ ରାଜ୍ୟ ଉଲ୍ଲେଖ କରନ୍ତୁ।",
+    greeting: "ନମସ୍କାର! ଆପଣଙ୍କ ଚାଷ ଜମିର ସ୍ଥାନ କଣ?",
     q2: "ଆପଣଙ୍କ ଚାଷ ଜମିର ଆକାର ଏକର ରେ କେତେ?",
     q3: "ଆପଣଙ୍କ ଫସଲର ପ୍ରକାର କଣ?",
-    q4: "ଆପଣ କେବେ ଫସଲ ବୁଣିଛନ୍ତି କିମ୍ବା ବୁଣିବାକୁ ଯୋଜନା କରୁଛନ୍ତି?",
+    q4: "ଆପଣ କେବେ ଫସଲ ବୁଣିଛନ୍ତି?",
     processing: "ଇନପୁଟ୍ ପ୍ରକ୍ରିୟାକରଣ...",
     lang: 'en-US'
   },
   tamil: {
-    greeting: "வணக்கம்! உங்கள் பண்ணையின் இடம் என்ன? மாவட்டம் மற்றும் மாநிலத்தைக் குறிப்பிடவும்.",
+    greeting: "வணக்கம்! உங்கள் பண்ணையின் இடம் என்ன?",
     q2: "உங்கள் பண்ணை அளவு ஏக்கரில் என்ன?",
     q3: "உங்கள் பயிர் வகை என்ன?",
-    q4: "நீங்கள் எப்போது பயிரை விதைத்தீர்கள் அல்லது விதைக்க திட்டமிடுகிறீர்கள்?",
+    q4: "நீங்கள் எப்போது பயிரை விதைத்தீர்கள்?",
     processing: "உள்ளீடுகளை செயலாக்குகிறது...",
     lang: 'ta-IN'
   }
@@ -53,7 +55,6 @@ app.innerHTML = `
   <div class="language-modal" id="languageModal">
     <div class="modal-content">
       <h2>Select Your Language</h2>
-      <p>भाषा चुनें | ଭାଷା ଚୟନ କରନ୍ତୁ | மொழியைத் தேர்ந்தெடுக்கவும்</p>
       <div class="language-buttons">
         <button class="language-btn" data-lang="english">English</button>
         <button class="language-btn" data-lang="hindi">हिन्दी</button>
@@ -67,9 +68,7 @@ app.innerHTML = `
     <div class="chat-header">Agricultural Data Collection</div>
     <div class="chat-messages" id="chatMessages"></div>
     <div class="chat-input-container">
-      <div class="input-wrapper">
-        <input type="text" id="messageInput" placeholder="Type your answer..." disabled />
-      </div>
+      <input type="text" id="messageInput" placeholder="Type your answer..." disabled />
       <button class="mic-button" id="micButton" disabled>🎤</button>
     </div>
   </div>
@@ -123,15 +122,10 @@ function speakMessage(text, lang) {
 function setupSpeechRecognition() {
   if ('webkitSpeechRecognition' in window) {
     recognition = new webkitSpeechRecognition();
-    recognition.continuous = false;
-    recognition.interimResults = false;
     recognition.lang = currentLanguage.lang;
-
     recognition.onresult = (e) => {
       const transcript = e.results[0][0].transcript;
-      messageInput.value = transcript;
       handleUserResponse(transcript);
-      micButton.classList.remove('recording');
     };
   }
 }
@@ -144,121 +138,90 @@ messageInput.addEventListener('keypress', e => {
 
 micButton.addEventListener('click', () => {
   if (!recognition) return;
-  if (micButton.classList.contains('recording')) {
-    recognition.stop();
-    micButton.classList.remove('recording');
-  } else {
-    recognition.start();
-    micButton.classList.add('recording');
-  }
+  recognition.start();
 });
+
+async function extractWithGemini(text, field) {
+  const res = await fetch(GEMINI_BACKEND_URL, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      speech_input: text,
+      field
+    })
+  });
+
+  return await res.json();
+}
 
 async function handleUserResponse(response) {
   addUserMessage(response);
   messageInput.value = '';
 
-  let valid = true;
+  const fields = ["location", "farm_size", "crop_type", "sowing_date"];
+  const field = fields[questionIndex];
 
-  switch (questionIndex) {
-    case 0:
-      const loc = extractLocationData(response);
-      if (!loc.district || !loc.state) {
-        addBotMessage("Please mention both district and state clearly.");
-        speakMessage("Please say your district and state again.", currentLanguage.lang);
-        valid = false;
-      } else {
-        collectedData.district = loc.district;
-        collectedData.state = loc.state;
-      }
-      break;
+  try {
+    const data = await extractWithGemini(response, field);
 
-    case 1:
-      const size = extractFarmSize(response);
-      if (!size || isNaN(size) || size <= 0) {
-        addBotMessage("That doesn't seem valid. Please enter your farm size again.");
-        speakMessage("Please say your farm size again.", currentLanguage.lang);
-        valid = false;
-      } else collectedData.farm_size_acres = size;
-      break;
-
-    case 2:
-      const crop = extractCropType(response);
-      if (!crop) {
-        addBotMessage("Please mention a valid crop name.");
-        speakMessage("Please say your crop name again.", currentLanguage.lang);
-        valid = false;
-      } else collectedData.crop_type = crop;
-      break;
-
-    case 3:
-      const date = extractSowingDate(response);
-      if (!date) {
-        addBotMessage("Could not catch your sowing date. Please repeat.");
-        speakMessage("Please say your sowing date again.", currentLanguage.lang);
-        valid = false;
-      } else collectedData.sowing_date = date;
-      break;
-  }
-
-  if (!valid) return;
-
-  questionIndex++;
-
-  setTimeout(async () => {
-    let next = '';
-
-    switch (questionIndex) {
-      case 1:
-        next = currentLanguage.q2;
-        break;
-      case 2:
-        next = currentLanguage.q3;
-        break;
-      case 3:
-        next = currentLanguage.q4;
-        break;
-      case 4:
-        next = currentLanguage.processing;
-        addBotMessage(next);
-        messageInput.disabled = true;
-        micButton.disabled = true;
-
-        console.log('Final collected data:', collectedData);
-
-        try {
-          // ✅ Send data to ML model backend
-          await fetch('https://agri-ai-web-app.onrender.com/', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(collectedData)
-          });
-
-          // ✅ Redirect with pre-filled parameters
-          const query = new URLSearchParams(collectedData).toString();
-          const redirectUrl = `https://agri-ai-web-app.onrender.com/?${query}`;
-
-          addBotMessage("Redirecting to the ML model insights page...");
-          speakMessage("Redirecting you to the insights page.", currentLanguage.lang);
-
-          setTimeout(() => {
-            window.location.href = redirectUrl;
-          }, 2000);
-
-        } catch (err) {
-          console.error('ML request failed:', err);
-          addBotMessage("❌ Failed to connect to the ML model.");
-        }
-        return;
+    if (field === "location") {
+      if (!data.district || !data.state) return retry("Please mention both district and state clearly.");
+      collectedData.district = data.district;
+      collectedData.state = data.state;
     }
 
-    addBotMessage(next);
-    speakMessage(next, currentLanguage.lang);
-  }, 500);
+    if (field === "farm_size") {
+      if (!data.farm_size_acres) return retry("Please say your farm size clearly.");
+      collectedData.farm_size_acres = data.farm_size_acres;
+    }
+
+    if (field === "crop_type") {
+      if (!data.crop_type) return retry("Please mention a valid crop name.");
+      collectedData.crop_type = data.crop_type;
+    }
+
+    if (field === "sowing_date") {
+      if (!data.sowing_date) return retry("Please say your sowing date again.");
+      collectedData.sowing_date = data.sowing_date;
+    }
+
+    questionIndex++;
+
+    if (questionIndex === 4) {
+      return finishProcess();
+    }
+
+    const nextQuestions = [currentLanguage.q2, currentLanguage.q3, currentLanguage.q4];
+    addBotMessage(nextQuestions[questionIndex - 1]);
+    speakMessage(nextQuestions[questionIndex - 1], currentLanguage.lang);
+
+  } catch (err) {
+    console.error(err);
+    retry("Error processing input. Please try again.");
+  }
 }
 
-if ('speechSynthesis' in window) {
-  speechSynthesis.getVoices();
-  window.speechSynthesis.onvoiceschanged = () => {
-    speechSynthesis.getVoices();
-  };
+function retry(message) {
+  addBotMessage(message);
+  speakMessage(message, currentLanguage.lang);
+}
+
+async function finishProcess() {
+  addBotMessage(currentLanguage.processing);
+  messageInput.disabled = true;
+  micButton.disabled = true;
+
+  try {
+    await fetch(ML_BACKEND_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(collectedData)
+    });
+
+    const query = new URLSearchParams(collectedData).toString();
+    window.location.href = `${ML_BACKEND_URL}?${query}`;
+
+  } catch (err) {
+    addBotMessage("❌ Failed to connect to ML model.");
+  }
 }
