@@ -45,10 +45,10 @@ let recognition = null;
 const collectedData = {
   district: null,
   state: null,
-  farm_size_acres: null,
-  crop_type: null,
+  land_area: null,
+  crop: null,
   sowing_date: null,
-  current_date: null   
+  end_date: null
 };
 
 const app = document.querySelector('#app');
@@ -159,7 +159,7 @@ async function handleUserResponse(response) {
   addUserMessage(response);
   messageInput.value = '';
 
-  const fields = ["location", "farm_size", "crop_type", "sowing_date"];
+  const fields = ["location", "land_area", "crop", "sowing_date"];
   const field = fields[questionIndex];
 
   try {
@@ -171,15 +171,15 @@ async function handleUserResponse(response) {
       collectedData.state = data.state;
     }
 
-    if (field === "farm_size") {
-      if (!data.farm_size_acres) return retry("Please say your farm size clearly.");
-      collectedData.farm_size_acres = data.farm_size_acres;
-    }
-
-    if (field === "crop_type") {
-      if (!data.crop_type) return retry("Please mention a valid crop name.");
-      collectedData.crop_type = data.crop_type;
-    }
+  if (field === "land_area") {
+    if (!data.land_area) return retry("Please say your farm size clearly.");
+    collectedData.land_area = data.land_area;
+  }
+  
+  if (field === "crop") {
+    if (!data.crop) return retry("Please mention a valid crop name.");
+    collectedData.crop = data.crop;
+  }
 
     if (field === "sowing_date") {
       if (!data.sowing_date) return retry("Please say your sowing date again.");
@@ -214,7 +214,7 @@ async function finishProcess() {
 
   try {
     
-    collectedData.current_date = new Date().toISOString().split("T")[0];
+    collectedData.end_date = new Date().toISOString().split("T")[0];
 
     const response = await fetch(ML_BACKEND_URL, {
       method: "POST",
