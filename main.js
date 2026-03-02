@@ -220,16 +220,6 @@ async function finishProcess() {
   try {
     collectedData.end_date = new Date().toISOString().split("T")[0];
 
-    const missingFields = Object.entries(collectedData)
-      .filter(([_, value]) => value === null || value === undefined)
-      .map(([key]) => key);
-
-    if (missingFields.length > 0) {
-      console.error("Missing fields:", missingFields);
-      addBotMessage("❌ Some data is missing. Please restart.");
-      return;
-    }
-
     console.log("Final data being sent:", collectedData);
 
     const response = await fetch(ML_BACKEND_URL, {
@@ -242,8 +232,6 @@ async function finishProcess() {
       throw new Error("Prediction failed");
     }
 
-    // We don't need result — just redirect
-    window.location.href = "https://illegalmonkey-agri-ai-iot.hf.space";
 
   } catch (err) {
     console.error("ML ERROR FULL:", err);
