@@ -1,7 +1,7 @@
 import './style.css'
 
 const GEMINI_BACKEND_URL = "https://llmbackend12-1.onrender.com/api/ask-llm";
-const ML_BACKEND_URL = "https://agri-ai-web-app.onrender.com/";
+const ML_BACKEND_URL = "https://illegalmonkey-agri-ai-iot.hf.space/predict";
 
 const translations = {
   english: {
@@ -212,16 +212,24 @@ async function finishProcess() {
   micButton.disabled = true;
 
   try {
-    await fetch(ML_BACKEND_URL, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(collectedData)
+    const response = await fetch(ML_BACKEND_URL, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(collectedData)   // 🔥 change here
     });
 
-    const query = new URLSearchParams(collectedData).toString();
-    window.location.href = `${ML_BACKEND_URL}?${query}`;
+    if (!response.ok) {
+      const errorText = await response.text();
+      throw new Error(errorText);
+    }
+
+    const result = await response.json();
+
+    addBotMessage("🌾 Recommendation:");
+    addBotMessage(result.result || JSON.stringify(result));
 
   } catch (err) {
+    console.error("ML ERROR:", err);
     addBotMessage("❌ Failed to connect to ML model.");
   }
 }
