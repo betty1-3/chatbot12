@@ -212,16 +212,6 @@ function retry(message) {
   speakMessage(message, currentLanguage.lang);
 }
 
-async function finishProcess() {
-  addBotMessage(currentLanguage.processing);
-  messageInput.disabled = true;
-  micButton.disabled = true;
-
-  try {
-    collectedData.end_date = new Date().toISOString().split("T")[0];
-
-    console.log("Final data being sent:", collectedData);
-
 function finishProcess() {
   addBotMessage(currentLanguage.processing);
   messageInput.disabled = true;
@@ -252,15 +242,4 @@ function finishProcess() {
 
   document.body.appendChild(form);
   form.submit();
-}
-
-    if (!response.ok) {
-      throw new Error("Prediction failed");
-    }
-
-
-  } catch (err) {
-    console.error("ML ERROR FULL:", err);
-    addBotMessage("❌ " + err.message);
-  }
 }
