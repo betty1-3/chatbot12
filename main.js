@@ -47,7 +47,8 @@ const collectedData = {
   state: null,
   farm_size_acres: null,
   crop_type: null,
-  sowing_date: null
+  sowing_date: null,
+  current_date: null   
 };
 
 const app = document.querySelector('#app');
@@ -212,10 +213,13 @@ async function finishProcess() {
   micButton.disabled = true;
 
   try {
+    
+    collectedData.current_date = new Date().toISOString().split("T")[0];
+
     const response = await fetch(ML_BACKEND_URL, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(collectedData)   // 🔥 change here
+      body: JSON.stringify(collectedData)
     });
 
     if (!response.ok) {
@@ -226,7 +230,7 @@ async function finishProcess() {
     const result = await response.json();
 
     addBotMessage("🌾 Recommendation:");
-    addBotMessage(result.result || JSON.stringify(result));
+    addBotMessage(result);
 
   } catch (err) {
     console.error("ML ERROR:", err);
