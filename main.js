@@ -213,8 +213,21 @@ async function finishProcess() {
   micButton.disabled = true;
 
   try {
-    
+
     collectedData.end_date = new Date().toISOString().split("T")[0];
+
+    // 🚨 STRICT VALIDATION
+    const missingFields = Object.entries(collectedData)
+      .filter(([key, value]) => value === null || value === undefined)
+      .map(([key]) => key);
+
+    if (missingFields.length > 0) {
+      console.error("Missing fields:", missingFields);
+      addBotMessage("❌ Some data is missing. Please restart.");
+      return;
+    }
+
+    console.log("Final data being sent:", collectedData);
 
     const response = await fetch(ML_BACKEND_URL, {
       method: "POST",
@@ -222,18 +235,13 @@ async function finishProcess() {
       body: JSON.stringify(collectedData)
     });
 
-    if (!response.ok) {
-      const errorText = await response.text();
-      throw new Error(errorText);
-    }
-
     const result = await response.json();
 
     addBotMessage("🌾 Recommendation:");
-    addBotMessage(result);
+    addBotMessage(JSON.stringify(result));
 
   } catch (err) {
-    console.error("ML ERROR:", err);
-    addBotMessage("❌ Failed to connect to ML model.");
+    console.error("ML ERROR FULL:", err);
+    addBotMessage("❌ " + err.message);
   }
 }
