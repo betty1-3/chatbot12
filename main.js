@@ -10,7 +10,7 @@ const translations = {
     q3: "What's your crop type?",
     q4: "When did you sow or are planning to sow the crop?",
     processing: "Processing inputs...",
-    lang: 'en-US'
+    lang: "en-US"
   },
   hindi: {
     greeting: "नमस्ते! आपके खेत का स्थान क्या है? कृपया जिला और राज्य बताएं।",
@@ -18,7 +18,7 @@ const translations = {
     q3: "आपकी फसल का प्रकार क्या है?",
     q4: "आपने फसल कब बोई या बोने की योजना बना रहे हैं?",
     processing: "इनपुट प्रोसेस हो रहे हैं...",
-    lang: 'hi-IN'
+    lang: "hi-IN"
   },
   odia: {
     greeting: "ନମସ୍କାର! ଆପଣଙ୍କ ଚାଷ ଜମିର ସ୍ଥାନ କଣ?",
@@ -26,7 +26,7 @@ const translations = {
     q3: "ଆପଣଙ୍କ ଫସଲର ପ୍ରକାର କଣ?",
     q4: "ଆପଣ କେବେ ଫସଲ ବୁଣିଛନ୍ତି?",
     processing: "ଇନପୁଟ୍ ପ୍ରକ୍ରିୟାକରଣ...",
-    lang: 'en-US'
+    lang: "en-US"
   },
   tamil: {
     greeting: "வணக்கம்! உங்கள் பண்ணையின் இடம் என்ன?",
@@ -34,7 +34,7 @@ const translations = {
     q3: "உங்கள் பயிர் வகை என்ன?",
     q4: "நீங்கள் எப்போது பயிரை விதைத்தீர்கள்?",
     processing: "உள்ளீடுகளை செயலாக்குகிறது...",
-    lang: 'ta-IN'
+    lang: "ta-IN"
   }
 };
 
@@ -51,43 +51,44 @@ const collectedData = {
   end_date: null
 };
 
-const app = document.querySelector('#app');
-app.innerHTML = `
-  <div class="language-modal" id="languageModal">
-    <div class="modal-content">
-      <h2>Select Your Language</h2>
-      <div class="language-buttons">
-        <button class="language-btn" data-lang="english">English</button>
-        <button class="language-btn" data-lang="hindi">हिन्दी</button>
-        <button class="language-btn" data-lang="odia">ଓଡ଼ିଆ</button>
-        <button class="language-btn" data-lang="tamil">தமிழ்</button>
-      </div>
-    </div>
-  </div>
+const app = document.querySelector("#app");
 
-  <div class="chatbox">
-    <div class="chat-header">Agricultural Data Collection</div>
-    <div class="chat-messages" id="chatMessages"></div>
-    <div class="chat-input-container">
-      <input type="text" id="messageInput" placeholder="Type your answer..." disabled />
-      <button class="mic-button" id="micButton" disabled>🎤</button>
+app.innerHTML = `
+<div class="language-modal" id="languageModal">
+  <div class="modal-content">
+    <h2>Select Your Language</h2>
+    <div class="language-buttons">
+      <button class="language-btn" data-lang="english">English</button>
+      <button class="language-btn" data-lang="hindi">हिन्दी</button>
+      <button class="language-btn" data-lang="odia">ଓଡ଼ିଆ</button>
+      <button class="language-btn" data-lang="tamil">தமிழ்</button>
     </div>
   </div>
+</div>
+
+<div class="chatbox">
+  <div class="chat-header">Agricultural Data Collection</div>
+  <div class="chat-messages" id="chatMessages"></div>
+  <div class="chat-input-container">
+    <input type="text" id="messageInput" placeholder="Type your answer..." disabled />
+    <button class="mic-button" id="micButton" disabled>🎤</button>
+  </div>
+</div>
 `;
 
-const languageButtons = document.querySelectorAll('.language-btn');
-const languageModal = document.getElementById('languageModal');
-const chatMessages = document.getElementById('chatMessages');
-const messageInput = document.getElementById('messageInput');
-const micButton = document.getElementById('micButton');
+const languageButtons = document.querySelectorAll(".language-btn");
+const languageModal = document.getElementById("languageModal");
+const chatMessages = document.getElementById("chatMessages");
+const messageInput = document.getElementById("messageInput");
+const micButton = document.getElementById("micButton");
 
-languageButtons.forEach(button => {
-  button.addEventListener('click', () => selectLanguage(button.dataset.lang));
-});
+languageButtons.forEach(btn =>
+  btn.addEventListener("click", () => selectLanguage(btn.dataset.lang))
+);
 
 function selectLanguage(lang) {
   currentLanguage = translations[lang];
-  languageModal.classList.add('hidden');
+  languageModal.classList.add("hidden");
   messageInput.disabled = false;
   micButton.disabled = false;
 
@@ -97,23 +98,23 @@ function selectLanguage(lang) {
 }
 
 function addBotMessage(text) {
-  const div = document.createElement('div');
-  div.className = 'message bot';
+  const div = document.createElement("div");
+  div.className = "message bot";
   div.innerHTML = `<div class="message-bubble">${text}</div>`;
   chatMessages.appendChild(div);
   chatMessages.scrollTop = chatMessages.scrollHeight;
 }
 
 function addUserMessage(text) {
-  const div = document.createElement('div');
-  div.className = 'message user';
+  const div = document.createElement("div");
+  div.className = "message user";
   div.innerHTML = `<div class="message-bubble">${text}</div>`;
   chatMessages.appendChild(div);
   chatMessages.scrollTop = chatMessages.scrollHeight;
 }
 
 function speakMessage(text, lang) {
-  if ('speechSynthesis' in window) {
+  if ("speechSynthesis" in window) {
     const utter = new SpeechSynthesisUtterance(text);
     utter.lang = lang;
     speechSynthesis.speak(utter);
@@ -121,7 +122,7 @@ function speakMessage(text, lang) {
 }
 
 function setupSpeechRecognition() {
-  if ('webkitSpeechRecognition' in window) {
+  if ("webkitSpeechRecognition" in window) {
     recognition = new webkitSpeechRecognition();
     recognition.lang = currentLanguage.lang;
     recognition.onresult = (e) => {
@@ -131,33 +132,28 @@ function setupSpeechRecognition() {
   }
 }
 
-messageInput.addEventListener('keypress', e => {
-  if (e.key === 'Enter' && messageInput.value.trim()) {
+messageInput.addEventListener("keypress", (e) => {
+  if (e.key === "Enter" && messageInput.value.trim()) {
     handleUserResponse(messageInput.value.trim());
   }
 });
 
-micButton.addEventListener('click', () => {
-  if (!recognition) return;
-  recognition.start();
+micButton.addEventListener("click", () => {
+  if (recognition) recognition.start();
 });
 
 async function extractWithGemini(text, field) {
   const res = await fetch(GEMINI_BACKEND_URL, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      speech_input: text,
-      field
-    })
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ speech_input: text, field })
   });
-
   return await res.json();
 }
 
 async function handleUserResponse(response) {
   addUserMessage(response);
-  messageInput.value = '';
+  messageInput.value = "";
 
   const fields = ["location", "land_area", "crop", "sowing_date"];
   const field = fields[questionIndex];
@@ -166,23 +162,27 @@ async function handleUserResponse(response) {
     const data = await extractWithGemini(response, field);
 
     if (field === "location") {
-      if (!data.district || !data.state) return retry("Please mention both district and state clearly.");
+      if (!data.district || !data.state)
+        return retry("Please mention both district and state clearly.");
       collectedData.district = data.district;
       collectedData.state = data.state;
     }
 
-  if (field === "land_area") {
-    if (!data.land_area) return retry("Please say your farm size clearly.");
-    collectedData.land_area = data.land_area;
-  }
-  
-  if (field === "crop") {
-    if (!data.crop) return retry("Please mention a valid crop name.");
-    collectedData.crop = data.crop;
-  }
+    if (field === "land_area") {
+      if (!data.land_area)
+        return retry("Please say your farm size clearly.");
+      collectedData.land_area = data.land_area;
+    }
+
+    if (field === "crop") {
+      if (!data.crop)
+        return retry("Please mention a valid crop name.");
+      collectedData.crop = data.crop;
+    }
 
     if (field === "sowing_date") {
-      if (!data.sowing_date) return retry("Please say your sowing date again.");
+      if (!data.sowing_date)
+        return retry("Please say your sowing date again.");
       collectedData.sowing_date = data.sowing_date;
     }
 
@@ -192,7 +192,12 @@ async function handleUserResponse(response) {
       return finishProcess();
     }
 
-    const nextQuestions = [currentLanguage.q2, currentLanguage.q3, currentLanguage.q4];
+    const nextQuestions = [
+      currentLanguage.q2,
+      currentLanguage.q3,
+      currentLanguage.q4
+    ];
+
     addBotMessage(nextQuestions[questionIndex - 1]);
     speakMessage(nextQuestions[questionIndex - 1], currentLanguage.lang);
 
@@ -213,12 +218,10 @@ async function finishProcess() {
   micButton.disabled = true;
 
   try {
-
     collectedData.end_date = new Date().toISOString().split("T")[0];
 
-    // 🚨 STRICT VALIDATION
     const missingFields = Object.entries(collectedData)
-      .filter(([key, value]) => value === null || value === undefined)
+      .filter(([_, value]) => value === null || value === undefined)
       .map(([key]) => key);
 
     if (missingFields.length > 0) {
@@ -229,16 +232,21 @@ async function finishProcess() {
 
     console.log("Final data being sent:", collectedData);
 
-const response = await fetch(ML_BACKEND_URL, {
-  method: "POST",
-  headers: {
-    "Content-Type": "application/json"
-  },
-  body: JSON.stringify(collectedData)
-});
+    const response = await fetch(ML_BACKEND_URL, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(collectedData)
+    });
 
-if (!response.ok) {
-  throw new Error("Prediction failed");
+    if (!response.ok) {
+      throw new Error("Prediction failed");
+    }
+
+    // We don't need result — just redirect
+    window.location.href = "https://illegalmonkey-agri-ai-iot.hf.space";
+
+  } catch (err) {
+    console.error("ML ERROR FULL:", err);
+    addBotMessage("❌ " + err.message);
+  }
 }
-
-window.location.href = "https://illegalmonkey-agri-ai-iot.hf.space";
